@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.react-flow__panel.react-flow__attribution.bottom.right {
+  display: none;
+}
