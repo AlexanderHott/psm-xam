@@ -6,10 +6,15 @@ import ReactFlow, {
   applyNodeChanges,
   applyEdgeChanges,
   addEdge,
-  Edge,
+  type Edge,
+  type NodeChange,
+  type EdgeChange,
+  type Connection,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { Osc } from "~/components/osc";
+import { TextUpdaterNode } from "~/components/custom-node";
+import { Osc } from "~/components/nodes";
+import { type NodeData } from "~/store";
 
 const initialNodes = [
   {
@@ -29,10 +34,17 @@ const initialNodes = [
     position: { x: 300, y: 300 },
     type: "osc",
   },
+  {
+    id: "text",
+    data: { label: "Text" },
+    position: { x: 500, y: 500 },
+    type: "text",
+  },
 ];
 
 const nodeTypes = {
   osc: Osc,
+  text: TextUpdaterNode,
 };
 
 const initialEdges: Edge[] = [];
@@ -42,16 +54,20 @@ function Flow() {
   const [edges, setEdges] = useState(initialEdges);
 
   const onNodesChange = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    (changes: NodeChange<NodeData, NodeData["type"]>[]) =>
+      // @ts-expect-error asdf
+      // eslint-disable-next-line
+      setNodes((nds) => applyNodeChanges(changes, nds)),
     [],
   );
   const onEdgesChange = useCallback(
-    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    (changes: EdgeChange[]) =>
+      setEdges((eds) => applyEdgeChanges(changes, eds)),
     [],
   );
 
   const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
+    (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
     [],
   );
 

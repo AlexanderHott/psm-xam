@@ -1,3 +1,5 @@
+"use client";
+
 import { nanoid } from "nanoid";
 import {
   type NodeChange,
@@ -29,7 +31,7 @@ type FlowSlice = {
   addEdge: OnConnect;
   removeEdges: (edges: Edge[]) => void;
 
-  updateNode: (id: string, data: NodeData) => void;
+  updateNode: (id: string, data: Partial<NodeData>) => void;
   removeNodes: (nodes: FlowNode[]) => void;
   createNode: (type: NodeData["type"]) => void;
 };
@@ -37,20 +39,23 @@ type FlowSlice = {
 export type NodeData =
   | {
       type: "osc";
+      label: string;
       frequency: number;
     }
   | {
       type: "gain";
+      label: string;
       gain: number;
     }
   | {
       type: "out";
+      label: string;
     };
 
 type AudioSlice = {
   ctx: AudioContext | null;
   toggleAudio: () => Promise<void>;
-  setup: () => void;
+  setup: (ctx: AudioContext) => void;
 };
 const createAudioSlice: StateCreator<AudioSlice, [], [], AudioSlice> = (
   set,
@@ -64,12 +69,11 @@ const createAudioSlice: StateCreator<AudioSlice, [], [], AudioSlice> = (
       ? await audioCtx?.suspend()
       : await audioCtx?.resume();
   },
-  setup: () => {
-    const ctx = get().ctx;
-    if (!ctx) {
-      console.log("overriding context");
-      const newCtx = new AudioContext();
-      set({ ctx: newCtx });
+  setup: (ctx) => {
+    const audioCtx = get().ctx;
+    if (!audioCtx) {
+      console.log("setting audio context");
+      set({ ctx });
     }
   },
 });
@@ -152,7 +156,7 @@ const createFlowSlice: StateCreator<
 
     switch (type) {
       case "osc": {
-        const data = { type: "osc", frequency: 440 } as const;
+        const data = { type: "osc", frequency: 440, label: "Osc" } as const;
         const position = { x: 0, y: 0 };
 
         createAudioNode(ctx, id, type, data);
@@ -162,7 +166,7 @@ const createFlowSlice: StateCreator<
       }
 
       case "gain": {
-        const data = { type: "gain", gain: 0 } as const;
+        const data = { type: "gain", gain: 0, label: "Gain" } as const;
         const position = { x: 0, y: 0 };
 
         createAudioNode(ctx, id, type, data);
@@ -171,7 +175,7 @@ const createFlowSlice: StateCreator<
         break;
       }
       case "out": {
-        const data = { type: "out" } as const;
+        const data = { type: "out", label: "Out" } as const;
         const position = { x: 0, y: 0 };
 
         createAudioNode(ctx, id, type, data);
